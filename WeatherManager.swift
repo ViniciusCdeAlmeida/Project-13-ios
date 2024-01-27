@@ -9,7 +9,8 @@
 import Foundation
 
 protocol WheatherManagerDelegate {
-    func didUpdateWeather(weather: WeatherModel)
+    func didUpdateWeather(_ weatherManager: WheatherManager,weather: WeatherModel)
+    func didFailError(error: Error)
 }
 
 struct WheatherManager {
@@ -28,16 +29,15 @@ struct WheatherManager {
             
             let task = session.dataTask(with: initialUrl) { data, response, error in
                 if error != nil {
-                    print(error!)
+                    self.delegate?.didFailError(error: error!)
                     return
                 }
                 if let safeData = data {
                     if let weather = self.parseJson(weatherData: safeData){
-                        self.delegate?.didUpdateWeather(weather: weather)
+                        self.delegate?.didUpdateWeather(self,weather: weather)
                     }
                 }
             }
-            //let task = session.dataTask(with: initialUrl, completionHandler: )
             
             task.resume()
             
@@ -58,7 +58,7 @@ struct WheatherManager {
             conditionId: id, cityName: name, temperature: temp)
             return weather
         } catch{
-            print(error)
+            delegate?.didFailError(error: error)
             return nil
         }
     }
